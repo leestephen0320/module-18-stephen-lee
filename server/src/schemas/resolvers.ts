@@ -21,6 +21,25 @@ const resolvers = {
       const users = await User.find({});
       return users.flatMap((user) => user.savedBooks as IBook[]);
     },
+    searchGoogleBooks: async (_, { query }) => {
+      try {
+        const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${query}`);
+        const data = await response.json();
+
+        // Transform the response data to match the GoogleAPIBook type
+        return data.items.map((book) => ({
+          bookId: book.id,
+          title: book.volumeInfo.title,
+          authors: book.volumeInfo.authors || ['No author available'],
+          description: book.volumeInfo.description,
+          image: book.volumeInfo.imageLinks?.thumbnail || '',
+          link: book.volumeInfo.infoLink,
+        }));
+      } catch (error) {
+        console.error(error);
+        throw new Error('Failed to fetch books from Google API');
+      }
+    },
   },
   
   Mutation: {

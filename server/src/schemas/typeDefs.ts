@@ -25,10 +25,20 @@ const typeDefs = `
     link: String
   }
 
+  type GoogleAPIBook {
+    bookId: String!
+    title: String!
+    authors: [String]
+    description: String
+    image: String
+    link: String
+  }
+
   type Query {
     getUser(id: String, username: String): User
     getAllUsers: [User]
     getBooks: [Book]
+    searchGoogleBooks(query: String!): [GoogleAPIBook]
   }
 
   type AuthPayload {
