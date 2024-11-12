@@ -1,19 +1,22 @@
 import { useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
-
-import { createUser } from '../utils/API';
+import { useMutation } from '@apollo/client';
+import { CREATE_USER } from '../utils/mutations'; // Import the GraphQL mutation for user creation
 import Auth from '../utils/auth';
 import type { User } from '../models/User';
 
 // biome-ignore lint/correctness/noEmptyPattern: <explanation>
 const SignupForm = ({}: { handleModalClose: () => void }) => {
-  // set initial form state
+  // Set initial form state
   const [userFormData, setUserFormData] = useState<User>({ username: '', email: '', password: '', savedBooks: [] });
-  // set state for form validation
+  // Set state for form validation
   const [validated] = useState(false);
-  // set state for alert
+  // Set state for alert
   const [showAlert, setShowAlert] = useState(false);
+
+  // Using Apollo Client's useMutation hook for the CREATE_USER mutation
+  const [createUserMutation] = useMutation(CREATE_USER);
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -23,7 +26,7 @@ const SignupForm = ({}: { handleModalClose: () => void }) => {
   const handleFormSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    // check if form has everything (as per react-bootstrap docs)
+    // Check if form has everything (as per react-bootstrap docs)
     const form = event.currentTarget;
     if (form.checkValidity() === false) {
       event.preventDefault();
@@ -31,19 +34,24 @@ const SignupForm = ({}: { handleModalClose: () => void }) => {
     }
 
     try {
-      const response = await createUser(userFormData);
+      // Call the mutation instead of the REST API
+      const { data } = await createUserMutation({
+        variables: {
+          username: userFormData.username,
+          email: userFormData.email,
+          password: userFormData.password,
+        },
+      });
 
-      if (!response.ok) {
-        throw new Error('something went wrong!');
-      }
-
-      const { token } = await response.json();
-      Auth.login(token);
+      // Handle successful signup
+      const { token } = data.createUser; // Assuming mutation returns a token
+      Auth.login(token); // Store the token using Auth utility
     } catch (err) {
       console.error(err);
       setShowAlert(true);
     }
 
+    // Clear form data after submit
     setUserFormData({
       username: '',
       email: '',
@@ -56,7 +64,7 @@ const SignupForm = ({}: { handleModalClose: () => void }) => {
     <>
       {/* This is needed for the validation functionality above */}
       <Form noValidate validated={validated} onSubmit={handleFormSubmit}>
-        {/* show alert if server response is bad */}
+        {/* Show alert if server response is bad */}
         <Alert dismissible onClose={() => setShowAlert(false)} show={showAlert} variant='danger'>
           Something went wrong with your signup!
         </Alert>
