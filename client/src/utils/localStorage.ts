@@ -1,5 +1,5 @@
 import { gql } from '@apollo/client';
-import { saveBooksToBackend } from './graphql'; // Ensure you import your actual GraphQL function
+import { client } from './apolloClient'; // Import Apollo Client instance
 
 // Get saved book IDs from localStorage
 export const getSavedBookIds = () => {
@@ -41,7 +41,6 @@ export const syncSavedBooksWithBackend = async (userId: string) => {
 
   if (savedBookIds.length > 0) {
     try {
-      // Example mutation to save books
       await saveBooksToBackend({ userId, savedBookIds });
     } catch (error) {
       console.error("Error syncing books with backend:", error);
@@ -49,26 +48,36 @@ export const syncSavedBooksWithBackend = async (userId: string) => {
   }
 };
 
-// Function to save books to the backend (GraphQL mutation)
+// Mutation for saving books to the backend
 const SAVE_BOOKS_MUTATION = gql`
-  mutation SaveBooks($userId: ID!, $savedBookIds: [String!]!) {
-    saveBooks(userId: $userId, savedBookIds: $savedBookIds) {
-      success
-      message
+  mutation saveBook($userId: ID!, $book: BookInput!) {
+    saveBook(userId: $userId, book: $book) {
+      _id
+      username
+      email
+      savedBooks {
+        bookId
+        title
+        authors
+        description
+        image
+        link
+      }
     }
   }
 `;
 
+// Function to save books to the backend using the GraphQL mutation
 export const saveBooksToBackend = async ({ userId, savedBookIds }: { userId: string, savedBookIds: string[] }) => {
   try {
-    const result = await client.mutate({
-      mutation: SAVE_BOOKS_MUTATION,
-      variables: {
-        userId,
-        savedBookIds,
-      },
-    });
-    return result.data.saveBooks;
+    for (const bookId of savedBookIds) {
+      // Assuming you have book information in the client-side, you may need to map this
+      const book = { bookId, title: 'Sample Book', authors: ['Author 1'], description: 'Description', image: 'image_url', link: 'link_url' };
+      await client.mutate({
+        mutation: SAVE_BOOKS_MUTATION,
+        variables: { userId, book },
+      });
+    }
   } catch (err) {
     console.error('Error saving books to backend', err);
     throw err;
