@@ -3,11 +3,20 @@ const typeDefs = `
     _id: ID!
     username: String!
     email: String!
-    savedBooks: [Book]
+    savedBooks: [Book]!
     bookCount: Int
   }
 
-  type Matchup {
+  type Book {
+    bookId: String!
+    title: String!
+    authors: [String]
+    description: String!
+    image: String
+    link: String
+  }
+
+  input BookInput {
     bookId: String!
     title: String!
     authors: [String]

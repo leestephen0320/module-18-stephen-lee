@@ -37,6 +37,4 @@ const bookSchema = new Schema<IBook>({
   },
 });
 
-const Book = model('Book', bookSchema)
-
-export default Book;
+export default bookSchema;
