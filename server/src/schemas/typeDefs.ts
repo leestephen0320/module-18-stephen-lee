@@ -48,7 +48,7 @@ const typeDefs = `
 
   type Mutation {
     registerUser(username: String!, email: String!, password: String!): AuthPayload
-    loginUser(email: String!, password: String!): String  # Returns a token after login
+    loginUser(email: String!, password: String!): AuthPayload
     saveBook(userId: ID!, book: BookInput!): User
     deleteBook(userId: ID!, bookId: String!): User
   }

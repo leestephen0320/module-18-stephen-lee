@@ -1,13 +1,13 @@
 import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-
 import dotenv from 'dotenv';
+
 dotenv.config();
 
 interface JwtPayload {
-  _id: unknown;
+  _id: string;
   username: string;
-  email: string,
+  email: string;
 }
 
 export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
@@ -18,12 +18,14 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
 
     const secretKey = process.env.JWT_SECRET_KEY || '';
 
-    jwt.verify(token, secretKey, (err, user) => {
-      if (err) {
+    jwt.verify(token, secretKey, (err, decoded) => {
+      if (err || !decoded) {
         return res.sendStatus(403); // Forbidden
       }
-
-      req.user = user as JwtPayload;
+  
+      const { _id, username, email } = decoded as JwtPayload;
+      // Store user information in locals or attach it as a parameter to be accessed in handlers
+      res.locals.user = { _id, username, email };
       return next();
     });
   } else {

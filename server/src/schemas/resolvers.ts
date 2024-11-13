@@ -3,6 +3,21 @@ import User, { IUser } from '../models/User.js';
 import bcrypt from 'bcrypt';
 import { signToken } from '../services/auth.js';
 
+interface GoogleAPIBookVolumeInfo {
+  title: string;
+  authors: string[] | null;
+  description: string | null;
+  imageLinks?: {
+    thumbnail: string;
+  };
+  infoLink: string;
+}
+
+interface GoogleAPIBook {
+  id: string;
+  volumeInfo: GoogleAPIBookVolumeInfo;
+}
+
 const resolvers = {
   Query: {
     getUser: async (_: any, { id, username }: { id?: string; username?: string }) => {
@@ -21,13 +36,13 @@ const resolvers = {
       const users = await User.find({});
       return users.flatMap((user) => user.savedBooks as IBook[]);
     },
-    searchGoogleBooks: async (_, { query }) => {
+    searchGoogleBooks: async (_: unknown, { query }: { query: string }) => {
       try {
         const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${query}`);
         const data = await response.json();
 
         // Transform the response data to match the GoogleAPIBook type
-        return data.items.map((book) => ({
+        return data.items.map((book: GoogleAPIBook) => ({
           bookId: book.id,
           title: book.volumeInfo.title,
           authors: book.volumeInfo.authors || ['No author available'],
@@ -50,7 +65,10 @@ const resolvers = {
       }
       const hashedPassword = await bcrypt.hash(password, 10);
       const user = await User.create({ username, email, password: hashedPassword });
-      const token = signToken(user._id, user.username); // Assuming signToken generates a JWT token
+
+      // Generate JWT token using signToken method
+      const token = signToken(user.username, user.email, user._id); 
+      
       return { token, user };
     },
 
@@ -59,7 +77,10 @@ const resolvers = {
       if (!user || !(await user.isCorrectPassword(password))) {
         throw new Error("Invalid email or password");
       }
-      const token = signToken(user._id, user.username);
+
+      // Generate JWT token using signToken method
+      const token = signToken(user.username, user.email, user._id);
+      
       return { token, user };
     },
 
