@@ -63,19 +63,27 @@ const resolvers = {
       if (existingUser) {
         throw new Error("User already exists with this email");
       }
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const user = await User.create({ username, email, password: hashedPassword });
-
+    
+      // Don't hash the password again; let the pre-save hook in User.ts handle it
+      const user = await User.create({ username, email, password });
+    
       // Generate JWT token using signToken method
       const token = signToken(user.username, user.email, user._id); 
-      
+    
       return { token, user };
     },
 
     loginUser: async (_: any, { email, password }: { email: string; password: string }) => {
-      const user = await User.findOne({ $or: [{ username: email }, { email }] });
-      if (!user || !(await user.isCorrectPassword(password))) {
-        throw new Error("Invalid email or password");
+      const user = await User.findOne({ email });
+      // Check if the user exists
+      if (!user) {
+        throw new Error("No user found with this email");
+      }
+
+      // Check the password
+      const isPasswordValid = await user.isCorrectPassword(password);
+      if (!isPasswordValid) {
+        throw new Error("Invalid password");
       }
 
       // Generate JWT token using signToken method

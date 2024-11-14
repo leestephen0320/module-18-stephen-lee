@@ -27,24 +27,41 @@ const SearchBooks = () => {
     }
   }, [searchData]);
 
-  const handleSaveBook = async (bookId:string) => {
+  const handleSaveBook = async (bookId: string) => {
     const bookToSave = searchedBooks.find((book) => book.bookId === bookId);
-    if (!bookToSave) return;
-
+    if (!bookToSave) return; // Return if no book is found
+  
+    // Check if the user is logged in and get the token
     const token = Auth.loggedIn() ? Auth.getToken() : null;
-    if (!token) return false;
-
+    if (!token) return false; // Exit if there's no token
+  
     try {
+      // Ensure the token and user profile are valid
+      const userProfile = Auth.getProfile(); // Make sure this function correctly returns the user profile
+      console.log(userProfile);
+      if (!userProfile || !userProfile.userId) {
+        console.error("User not found or missing userId");
+        return;
+      }
+  
+      // Call the saveBook mutation with the required variables
       await saveBook({
         variables: {
-          userId: Auth.getProfile().userId,
-          book: bookToSave,
+          userId: userProfile.userId, // Pass the userId to the mutation
+          book: {
+            bookId: bookToSave.bookId, // Ensure book data is in the correct shape for your mutation
+            title: bookToSave.title,
+            authors: bookToSave.authors,
+            description: bookToSave.description,
+            // Add any other book fields expected by the mutation
+          },
         },
       });
     } catch (err) {
-      console.error(err);
+      console.error("Error saving book:", err); // Log any errors that occur
     }
   };
+  
 
   return (
     <div className="text-light bg-dark p-5">
