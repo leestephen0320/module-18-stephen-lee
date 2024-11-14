@@ -50,6 +50,7 @@ export const GET_BOOKS = gql`
   }
 `;
 
+// Query to search Google Books API via the server
 export const SEARCH_GOOGLE_BOOKS = gql`
   query searchGoogleBooks($query: String!) {
     searchGoogleBooks(query: $query) {
