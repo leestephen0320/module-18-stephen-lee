@@ -22,18 +22,19 @@ const SavedBooks = () => {
   // Update user data from the query result
   useEffect(() => {
     if (data) {
+      console.log('Received user data:', data);
       setUserData(data.getUser);
     }
   }, [data]);
 
   const handleDeleteBook = async (bookId: string) => {
     if (!token) return;
-
+  
     try {
       const { data } = await removeBookMutation({
-        variables: { bookId, token },
+        variables: { token, bookId },
       });
-
+  
       if (data) {
         setUserData(data.deleteBook);
       }
@@ -41,9 +42,13 @@ const SavedBooks = () => {
       console.error(err);
     }
   };
+  
 
   if (loading) return <h2>LOADING...</h2>;
-  if (error) return <h2>Something went wrong!</h2>;
+  if (error) {
+    console.error('Error fetching user data:', error);
+    return <h2>Something went wrong!</h2>;
+  }
 
   return (
     <div className='text-light bg-dark p-5'>

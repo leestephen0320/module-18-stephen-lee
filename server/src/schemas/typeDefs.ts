@@ -35,7 +35,7 @@ const typeDefs = `
   }
 
   type Query {
-    getUser(id: String, username: String): User
+    getUser(token: String!): User
     getAllUsers: [User]
     getBooks: [Book]
     searchGoogleBooks(query: String!): [GoogleAPIBook]
@@ -50,7 +50,7 @@ const typeDefs = `
     registerUser(username: String!, email: String!, password: String!): AuthPayload
     loginUser(email: String!, password: String!): AuthPayload
     saveBook(userId: ID!, book: BookInput!): User
-    deleteBook(userId: ID!, bookId: String!): User
+    deleteBook(token: String!, bookId: String!): User
   }
 `;
 

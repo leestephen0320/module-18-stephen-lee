@@ -2,8 +2,8 @@ import { gql } from '@apollo/client';
 
 // Query for fetching a user's data (by ID or username)
 export const GET_USER = gql`
-  query getUser($id: String, $username: String) {
-    getUser(id: $id, username: $username) {
+  query getUser($token: String!) {
+    getUser(token: $token) {
       _id
       username
       email
@@ -19,6 +19,7 @@ export const GET_USER = gql`
     }
   }
 `;
+
 
 // Query for getting all users
 export const GET_ALL_USERS = gql`

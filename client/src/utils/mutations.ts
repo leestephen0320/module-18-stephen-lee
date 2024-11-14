@@ -44,8 +44,8 @@ export const SAVE_BOOK = gql`
 
 // Mutation for deleting a book from the user's savedBooks
 export const DELETE_BOOK = gql`
-  mutation deleteBook($userId: ID!, $bookId: String!) {
-    deleteBook(userId: $userId, bookId: $bookId) {
+  mutation deleteBook($token: String!, $bookId: String!) {
+    deleteBook(token: $token, bookId: $bookId) {
       _id
       username
       email
@@ -60,3 +60,4 @@ export const DELETE_BOOK = gql`
     }
   }
 `;
+
